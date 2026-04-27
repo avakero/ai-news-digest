@@ -89,7 +89,7 @@ ForkしたリポジトリのページでSECRETS (Secrets = 外部に見えない
 
 | Name | 値 | デフォルト |
 |------|----|---------|
-| `AI_PROVIDER` | `anthropic` / `gemini` / `straico` | `anthropic` |
+| `AI_PROVIDER` | `gemini` / `anthropic` / `straico` | `gemini` |
 | `GEMINI_MODEL` | 例: `gemini-2.5-flash` | `gemini-2.5-flash` |
 | `STRAICO_MODEL` | 例: `openai/gpt-4o-mini` | `openai/gpt-4o-mini` |
 
