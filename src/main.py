@@ -213,29 +213,37 @@ def build_html(articles: list[dict], date_str: str, sources_summary: str) -> str
 <html>
 <head><meta charset="UTF-8">
 <style>
-  body {{ margin: 0; padding: 0; background-color: #f0f4f8; font-family: 'Helvetica Neue', Arial, sans-serif; }}
+  body {{ margin: 0; padding: 0; background-color: #f0f4f8; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-text-size-adjust: 100%; }}
   .wrapper {{ max-width: 680px; margin: 0 auto; background: #ffffff; }}
-  .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 40px 32px; text-align: center; }}
-  .header-icon {{ font-size: 48px; margin-bottom: 12px; }}
-  .header-title {{ color: #fff; font-size: 26px; font-weight: 700; margin: 0 0 6px; }}
+  .header {{ background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 32px 16px; text-align: center; }}
+  .header-icon {{ font-size: 44px; margin-bottom: 10px; }}
+  .header-title {{ color: #fff; font-size: 22px; font-weight: 700; margin: 0 0 6px; }}
   .header-subtitle {{ color: #a0aec0; font-size: 14px; margin: 0; }}
-  .header-date {{ display: inline-block; margin-top: 16px; background: rgba(255,255,255,0.1); color: #e2e8f0; font-size: 13px; padding: 6px 16px; border-radius: 20px; }}
-  .content {{ padding: 32px; }}
-  .section-label {{ font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #718096; text-transform: uppercase; margin-bottom: 20px; }}
-  .article {{ border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden; }}
+  .header-date {{ display: inline-block; margin-top: 14px; background: rgba(255,255,255,0.1); color: #e2e8f0; font-size: 13px; padding: 6px 14px; border-radius: 20px; }}
+  .content {{ padding: 12px 10px; }}
+  .section-label {{ font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #718096; text-transform: uppercase; margin-bottom: 12px; padding-left: 4px; }}
+  .article {{ border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 14px 14px 18px; margin-bottom: 12px; position: relative; overflow: hidden; }}
   .article::before {{ content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #667eea, #764ba2); }}
-  .article-source {{ font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #667eea; margin-bottom: 8px; }}
-  .article-title-jp {{ font-size: 17px; font-weight: 700; color: #1a202c; line-height: 1.4; margin-bottom: 4px; }}
-  .article-title-en {{ font-size: 12px; color: #718096; margin-bottom: 14px; font-style: italic; }}
-  .article-body {{ font-size: 14px; color: #4a5568; line-height: 1.8; margin-bottom: 16px; }}
-  .article-link {{ display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; }}
-  .article-meta {{ font-size: 12px; color: #a0aec0; margin-top: 12px; }}
-  .footer {{ background: #1a1a2e; padding: 28px 32px; text-align: center; }}
+  .article-source {{ font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #667eea; margin-bottom: 6px; }}
+  .article-title-jp {{ font-size: 17px; font-weight: 700; color: #1a202c; line-height: 1.45; margin-bottom: 4px; }}
+  .article-title-en {{ font-size: 12px; color: #718096; margin-bottom: 12px; font-style: italic; line-height: 1.4; }}
+  .article-body {{ font-size: 15px; color: #4a5568; line-height: 1.85; margin-bottom: 14px; }}
+  .article-link {{ display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; padding: 9px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; }}
+  .article-meta {{ font-size: 12px; color: #a0aec0; margin-top: 10px; }}
+  .footer {{ background: #1a1a2e; padding: 24px 16px; text-align: center; }}
   .footer-text {{ color: #718096; font-size: 13px; line-height: 1.6; }}
   .footer-count {{ color: #667eea; font-weight: 700; font-size: 20px; }}
-  .divider {{ height: 1px; background: linear-gradient(90deg, transparent, #e2e8f0, transparent); margin: 4px 0 24px; }}
-  .source-list {{ background: #f7fafc; border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 12px; color: #4a5568; line-height: 1.7; }}
+  .divider {{ height: 1px; background: linear-gradient(90deg, transparent, #e2e8f0, transparent); margin: 4px 0 14px; }}
+  .source-list {{ background: #f7fafc; border-radius: 8px; padding: 12px 14px; margin-top: 12px; font-size: 12px; color: #4a5568; line-height: 1.8; }}
   .source-list strong {{ color: #1a202c; }}
+  @media screen and (max-width: 480px) {{
+    .content {{ padding: 10px 8px; }}
+    .article {{ padding: 14px 12px 12px 16px; margin-bottom: 10px; }}
+    .article-title-jp {{ font-size: 16px; }}
+    .article-body {{ font-size: 15px; line-height: 1.9; }}
+    .header {{ padding: 24px 12px; }}
+    .header-title {{ font-size: 20px; }}
+  }}
 </style></head>
 <body>
 <div class="wrapper">
