@@ -28,14 +28,18 @@ jobs:
       - name: AIニュースダイジェストを送信
         env:
           # ── AIプロバイダー設定 ──────────────────────────────
-          # "anthropic"（デフォルト）または "gemini" を指定
+          # "anthropic"（デフォルト）/ "gemini" / "straico" を指定
           AI_PROVIDER:        ${{ vars.AI_PROVIDER || 'anthropic' }}
           # Anthropic Claude を使う場合
           ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
           # Google Gemini を使う場合
           GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
-          # Geminiのモデル名（変更したい場合のみ設定。デフォルト: gemini-2.5-flash）
+          # Geminiのモデル名（デフォルト: gemini-2.5-flash）
           GEMINI_MODEL:       ${{ vars.GEMINI_MODEL || 'gemini-2.5-flash' }}
+          # Straico を使う場合
+          STRAICO_API_KEY:    ${{ secrets.STRAICO_API_KEY }}
+          # Straicoのモデル名（デフォルト: openai/gpt-4o-mini）
+          STRAICO_MODEL:      ${{ vars.STRAICO_MODEL || 'openai/gpt-4o-mini' }}
           # ── Gmail設定 ──────────────────────────────────────
           GMAIL_USER:         ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}

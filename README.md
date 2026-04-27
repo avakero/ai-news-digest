@@ -39,9 +39,16 @@ AI関連ニュースを自動収集・日本語要約してメールで届けま
 2. 「Create API key」→「Create API key in new project」
 3. `AIza...` から始まる文字列をコピーして保存
 
+#### Straicoを使う場合（多数のモデルを1つのAPIキーで使い回せる）
+1. [https://platform.straico.com/settings-api](https://platform.straico.com/settings-api) にアクセス
+2. APIキーをコピーして保存
+3. 使いたいモデルを [https://straico.com/multimodel](https://straico.com/multimodel) で確認  
+   例: `openai/gpt-4o-mini` / `anthropic/claude-3-5-sonnet` / `google/gemini-flash-1.5`
+
 > 💡 **コスト比較**（1日1回実行・月額目安）  
 > Anthropic Claude Opus 4.7: 約100〜200円  
-> Gemini 2.5 Flash: 約10〜30円（無料枠内に収まることも多い）
+> Gemini 2.5 Flash: 約10〜30円（無料枠内に収まることも多い）  
+> Straico: モデルによる（GPT-4o-miniなら約20〜50円）
 
 ---
 
@@ -71,6 +78,7 @@ ForkしたリポジトリのページでSECRETS (Secrets = 外部に見えない
 |------|----|-------|
 | `ANTHROPIC_API_KEY` | `sk-ant-...` | Claudeを使う場合 |
 | `GEMINI_API_KEY` | `AIza...` | Geminiを使う場合 |
+| `STRAICO_API_KEY` | Straicoのキー | Straicoを使う場合 |
 | `GMAIL_USER` | `あなたのアドレス@gmail.com` | ✅ 必須 |
 | `GMAIL_APP_PASSWORD` | 16文字のアプリパスワード | ✅ 必須 |
 | `RECIPIENT_EMAIL` | 受け取りたいアドレス | ✅ 必須 |
@@ -79,9 +87,11 @@ ForkしたリポジトリのページでSECRETS (Secrets = 外部に見えない
 
 左メニューの「Secrets and variables」→「Variables」→「New repository variable」で登録:
 
-| Name | 値 |
-|------|----|
-| `AI_PROVIDER` | `anthropic`（デフォルト）または `gemini` |
+| Name | 値 | デフォルト |
+|------|----|---------|
+| `AI_PROVIDER` | `anthropic` / `gemini` / `straico` | `anthropic` |
+| `GEMINI_MODEL` | 例: `gemini-2.5-flash` | `gemini-2.5-flash` |
+| `STRAICO_MODEL` | 例: `openai/gpt-4o-mini` | `openai/gpt-4o-mini` |
 
 ---
 

@@ -5,6 +5,7 @@ AI News Digest - メイン処理
 AI_PROVIDER 環境変数で使用するLLMを切り替え可能:
   anthropic（デフォルト）: Claude Opus 4.7
   gemini               : Gemini 2.5 Flash
+  straico              : Straico経由で任意モデル（OpenAI互換 v2 API）
 """
 
 import os
@@ -35,8 +36,10 @@ RSS2JSON_API  = "https://api.rss2json.com/v1/api.json"
 HOURS_WINDOW  = 36  # 過去何時間以内の記事を対象にするか
 
 # 使用するAIプロバイダー（環境変数で切り替え）
-AI_PROVIDER   = os.environ.get("AI_PROVIDER", "anthropic").lower()
-GEMINI_MODEL  = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+AI_PROVIDER     = os.environ.get("AI_PROVIDER", "anthropic").lower()
+GEMINI_MODEL    = os.environ.get("GEMINI_MODEL",  "gemini-2.5-flash")
+STRAICO_MODEL   = os.environ.get("STRAICO_MODEL", "openai/gpt-4o-mini")
+STRAICO_API_URL = "https://api.straico.com/v2"
 
 
 # ──────────────────────────────────────────
@@ -156,6 +159,23 @@ def _summarize_gemini(prompt: str) -> list[dict]:
 
 
 # ──────────────────────────────────────────
+# Straico（OpenAI互換 v2）で翻訳・要約・選定
+# ──────────────────────────────────────────
+def _summarize_straico(prompt: str) -> list[dict]:
+    from openai import OpenAI
+    client = OpenAI(
+        api_key=os.environ["STRAICO_API_KEY"],
+        base_url=STRAICO_API_URL,
+    )
+    response = client.chat.completions.create(
+        model=STRAICO_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=4096,
+    )
+    return _parse_json(response.choices[0].message.content)
+
+
+# ──────────────────────────────────────────
 # プロバイダーを自動選択して実行
 # ──────────────────────────────────────────
 def select_and_summarize(articles: list[dict]) -> list[dict]:
@@ -163,6 +183,9 @@ def select_and_summarize(articles: list[dict]) -> list[dict]:
     if AI_PROVIDER == "gemini":
         print(f"[AI] Gemini ({GEMINI_MODEL}) で要約します")
         return _summarize_gemini(prompt)
+    elif AI_PROVIDER == "straico":
+        print(f"[AI] Straico ({STRAICO_MODEL}) で要約します")
+        return _summarize_straico(prompt)
     else:
         print("[AI] Claude (claude-opus-4-7) で要約します")
         return _summarize_anthropic(prompt)
