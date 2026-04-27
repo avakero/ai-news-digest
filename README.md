@@ -25,14 +25,23 @@ AI関連ニュースを自動収集・日本語要約してメールで届けま
 
 ---
 
-### STEP 2: Anthropic APIキーを取得する
+### STEP 2: AIプロバイダーのAPIキーを取得する
 
+**AnthropicとGeminiのどちらか一方でOKです。両方取得しても使えます。**
+
+#### Anthropic（Claude）を使う場合
 1. [https://console.anthropic.com](https://console.anthropic.com) にアクセス
-2. アカウントを作成（無料）
-3. 「API Keys」→「Create Key」でキーを発行
-4. `sk-ant-...` から始まる文字列をコピーして保存
+2. アカウントを作成 → 「API Keys」→「Create Key」
+3. `sk-ant-...` から始まる文字列をコピーして保存
 
-> 💡 APIの使用料金について：1日1回の実行で月額 **約50〜200円程度**（使用量による）
+#### Google Gemini Flashを使う場合（無料枠が大きく安い）
+1. [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey) にアクセス
+2. 「Create API key」→「Create API key in new project」
+3. `AIza...` から始まる文字列をコピーして保存
+
+> 💡 **コスト比較**（1日1回実行・月額目安）  
+> Anthropic Claude Opus 4.7: 約100〜200円  
+> Gemini 2.5 Flash: 約10〜30円（無料枠内に収まることも多い）
 
 ---
 
@@ -56,12 +65,23 @@ ForkしたリポジトリのページでSECRETS (Secrets = 外部に見えない
 2. 左メニューの **「Secrets and variables」→「Actions」** をクリック
 3. **「New repository secret」** ボタンを4回押して、以下を登録：
 
-| Name（名前） | Secret（値） |
-|-------------|------------|
-| `ANTHROPIC_API_KEY` | `sk-ant-...`（STEP 2で取得） |
-| `GMAIL_USER` | `あなたのメールアドレス@gmail.com` |
-| `GMAIL_APP_PASSWORD` | `xxxx xxxx xxxx xxxx`（STEP 3で取得） |
-| `RECIPIENT_EMAIL` | メールを受け取りたいアドレス（自分でもOK） |
+**Secrets（外部に見えない秘密の値）:**
+
+| Name | 値 | 必須？ |
+|------|----|-------|
+| `ANTHROPIC_API_KEY` | `sk-ant-...` | Claudeを使う場合 |
+| `GEMINI_API_KEY` | `AIza...` | Geminiを使う場合 |
+| `GMAIL_USER` | `あなたのアドレス@gmail.com` | ✅ 必須 |
+| `GMAIL_APP_PASSWORD` | 16文字のアプリパスワード | ✅ 必須 |
+| `RECIPIENT_EMAIL` | 受け取りたいアドレス | ✅ 必須 |
+
+**Variables（プロバイダー切り替え用の設定値）:**
+
+左メニューの「Secrets and variables」→「Variables」→「New repository variable」で登録:
+
+| Name | 値 |
+|------|----|
+| `AI_PROVIDER` | `anthropic`（デフォルト）または `gemini` |
 
 ---
 

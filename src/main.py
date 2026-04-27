@@ -1,6 +1,10 @@
 """
 AI News Digest - メイン処理
 毎朝、信頼できるAI関連RSSを取得・翻訳・要約してメール送信する
+
+AI_PROVIDER 環境変数で使用するLLMを切り替え可能:
+  anthropic（デフォルト）: Claude Opus 4.7
+  gemini               : Gemini 2.5 Flash
 """
 
 import os
@@ -11,7 +15,6 @@ from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dateutil import parser as dateparser
-import anthropic
 
 # ──────────────────────────────────────────
 # 設定: RSSソース一覧（ホワイトリスト限定）
@@ -28,8 +31,12 @@ SOURCES = [
     {"name": "arXiv cs.AI",      "url": "http://export.arxiv.org/rss/cs.AI"},
 ]
 
-RSS2JSON_API = "https://api.rss2json.com/v1/api.json"
-HOURS_WINDOW = 36  # 過去何時間以内の記事を対象にするか
+RSS2JSON_API  = "https://api.rss2json.com/v1/api.json"
+HOURS_WINDOW  = 36  # 過去何時間以内の記事を対象にするか
+
+# 使用するAIプロバイダー（環境変数で切り替え）
+AI_PROVIDER   = os.environ.get("AI_PROVIDER", "anthropic").lower()
+GEMINI_MODEL  = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 # ──────────────────────────────────────────
@@ -74,11 +81,9 @@ def is_recent(pub_date_str: str, hours: int = HOURS_WINDOW) -> bool:
 
 
 # ──────────────────────────────────────────
-# Claude APIで翻訳・要約・選定
+# 共通プロンプト生成
 # ──────────────────────────────────────────
-def select_and_summarize(articles: list[dict]) -> list[dict]:
-    client = anthropic.Anthropic()
-
+def _build_prompt(articles: list[dict]) -> str:
     articles_text = "\n\n".join(
         f"[{i + 1}] SOURCE: {a['source']}\n"
         f"TITLE: {a['title']}\n"
@@ -87,8 +92,7 @@ def select_and_summarize(articles: list[dict]) -> list[dict]:
         f"DESCRIPTION: {a['description']}"
         for i, a in enumerate(articles[:20])
     )
-
-    prompt = f"""あなたはAIニュースのキュレーターです。
+    return f"""あなたはAIニュースのキュレーターです。
 以下の記事リストから最も重要な7〜8件を選び、日本語に翻訳・要約してください。
 
 【選定優先度】
@@ -113,19 +117,55 @@ def select_and_summarize(articles: list[dict]) -> list[dict]:
   }}
 ]"""
 
+
+def _parse_json(raw: str) -> list[dict]:
+    raw = raw.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    return json.loads(raw.strip())
+
+
+# ──────────────────────────────────────────
+# Anthropic Claude で翻訳・要約・選定
+# ──────────────────────────────────────────
+def _summarize_anthropic(prompt: str) -> list[dict]:
+    import anthropic as _anthropic
+    client = _anthropic.Anthropic()
     message = client.messages.create(
         model="claude-opus-4-7",
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
     )
+    return _parse_json(message.content[0].text)
 
-    raw = message.content[0].text.strip()
-    # コードブロックが含まれる場合は除去
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    return json.loads(raw)
+
+# ──────────────────────────────────────────
+# Google Gemini Flash で翻訳・要約・選定
+# ──────────────────────────────────────────
+def _summarize_gemini(prompt: str) -> list[dict]:
+    import google.generativeai as genai
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel(
+        model_name=GEMINI_MODEL,
+        generation_config={"response_mime_type": "application/json"},
+    )
+    response = model.generate_content(prompt)
+    return _parse_json(response.text)
+
+
+# ──────────────────────────────────────────
+# プロバイダーを自動選択して実行
+# ──────────────────────────────────────────
+def select_and_summarize(articles: list[dict]) -> list[dict]:
+    prompt = _build_prompt(articles)
+    if AI_PROVIDER == "gemini":
+        print(f"[AI] Gemini ({GEMINI_MODEL}) で要約します")
+        return _summarize_gemini(prompt)
+    else:
+        print("[AI] Claude (claude-opus-4-7) で要約します")
+        return _summarize_anthropic(prompt)
 
 
 # ──────────────────────────────────────────
