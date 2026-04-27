@@ -30,8 +30,9 @@ jobs:
           # ── AIプロバイダー設定 ──────────────────────────────
           # "anthropic"（デフォルト）/ "gemini" / "straico" を指定
           AI_PROVIDER:        ${{ vars.AI_PROVIDER || 'anthropic' }}
-          # Anthropic Claude を使う場合
+          # Anthropic Claude を使う場合（デフォルトモデル: claude-sonnet-4-6）
           ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL:    ${{ vars.ANTHROPIC_MODEL || 'claude-sonnet-4-6' }}
           # Google Gemini を使う場合
           GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
           # Geminiのモデル名（デフォルト: gemini-2.5-flash）

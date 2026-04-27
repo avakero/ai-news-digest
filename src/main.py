@@ -36,10 +36,11 @@ RSS2JSON_API  = "https://api.rss2json.com/v1/api.json"
 HOURS_WINDOW  = 36  # 過去何時間以内の記事を対象にするか
 
 # 使用するAIプロバイダー（環境変数で切り替え）
-AI_PROVIDER     = os.environ.get("AI_PROVIDER", "anthropic").lower()
-GEMINI_MODEL    = os.environ.get("GEMINI_MODEL",  "gemini-2.5-flash")
-STRAICO_MODEL   = os.environ.get("STRAICO_MODEL", "openai/gpt-4o-mini")
-STRAICO_API_URL = "https://api.straico.com/v2"
+AI_PROVIDER       = os.environ.get("AI_PROVIDER",     "anthropic").lower()
+ANTHROPIC_MODEL   = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+GEMINI_MODEL      = os.environ.get("GEMINI_MODEL",    "gemini-2.5-flash")
+STRAICO_MODEL     = os.environ.get("STRAICO_MODEL",   "openai/gpt-4o-mini")
+STRAICO_API_URL   = "https://api.straico.com/v2"
 
 
 # ──────────────────────────────────────────
@@ -137,7 +138,7 @@ def _summarize_anthropic(prompt: str) -> list[dict]:
     import anthropic as _anthropic
     client = _anthropic.Anthropic()
     message = client.messages.create(
-        model="claude-opus-4-7",
+        model=ANTHROPIC_MODEL,
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -187,7 +188,7 @@ def select_and_summarize(articles: list[dict]) -> list[dict]:
         print(f"[AI] Straico ({STRAICO_MODEL}) で要約します")
         return _summarize_straico(prompt)
     else:
-        print("[AI] Claude (claude-opus-4-7) で要約します")
+        print(f"[AI] Claude ({ANTHROPIC_MODEL}) で要約します")
         return _summarize_anthropic(prompt)
 
 
