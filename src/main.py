@@ -271,28 +271,33 @@ def build_html(articles: list[dict], date_str: str, sources_summary: str) -> str
 
 
 # ──────────────────────────────────────────
-# Gmail送信（SMTPアプリパスワード方式）
+# Gmail送信（SMTPアプリパスワード方式・複数宛先対応）
 # ──────────────────────────────────────────
-def send_email(html_body: str, subject: str, to_email: str, from_email: str, app_password: str) -> None:
+def send_email(html_body: str, subject: str, recipients: list[str], from_email: str, app_password: str) -> None:
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"]    = from_email
-    msg["To"]      = to_email
+    # To欄には最初の1件のみ表示、実際の配信はBCCで全員に送る（プライバシー保護）
+    msg["To"]      = recipients[0]
+    if len(recipients) > 1:
+        msg["Bcc"] = ", ".join(recipients[1:])
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(from_email, app_password)
-        server.sendmail(from_email, to_email, msg.as_string())
-        print(f"✅ メール送信完了 → {to_email}")
+        server.sendmail(from_email, recipients, msg.as_string())
+        print(f"✅ メール送信完了 → {len(recipients)}件: {', '.join(recipients)}")
 
 
 # ──────────────────────────────────────────
 # メイン処理
 # ──────────────────────────────────────────
 def main():
-    recipient    = os.environ["RECIPIENT_EMAIL"]
+    # カンマ区切りで複数アドレスに対応（スペースは除去）
+    recipients   = [r.strip() for r in os.environ["RECIPIENT_EMAIL"].split(",") if r.strip()]
     sender       = os.environ["GMAIL_USER"]
     app_password = os.environ["GMAIL_APP_PASSWORD"]
+    print(f"📬 送信先: {len(recipients)}件")
 
     # 1. RSS全ソースを取得
     all_articles  = []
@@ -335,7 +340,7 @@ def main():
     # 5. HTMLメールを組み立て・送信
     html    = build_html(selected, date_str, sources_summary)
     subject = f"🤖 AIモーニングダイジェスト — {date_str}"
-    send_email(html, subject, recipient, sender, app_password)
+    send_email(html, subject, recipients, sender, app_password)
 
 
 if __name__ == "__main__":
